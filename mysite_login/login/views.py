@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+# -*- coding: utf-8 -*-
 # Create your views here.
 # login/views.py
 
@@ -7,7 +7,8 @@ from django.shortcuts import render, redirect
 from . import models
 from .forms import UserForm
 from .forms import RegisterForm
-
+import re
+from passlib.hash import sha256_crypt
 
 def index(request):
     pass
@@ -27,7 +28,8 @@ def login(request):
             password = login_form.cleaned_data['password']
             try:
                 user = models.User.objects.get(name=username)
-                if user.password == password:
+                # 进行哈希值的比对
+                if sha256_crypt.verify(password, user.password):
                     # 往session字典内写入用户状态和数据
                     request.session['is_login'] = True
                     request.session['user_id'] = user.id
@@ -52,12 +54,25 @@ def register(request):
         message = "请检查填写的内容！"
         if register_form.is_valid():  # 获取数据
             username = register_form.cleaned_data['username']
+            # 匹配数字、字母、中文和特殊字符
+            p = re.compile(r'[0-9]*[a-z]*[A-Z]*[\-]*[\_]*[\.]*[\u4e00-\u9fa5]*')
+            if '' in p.findall(username)[:-1]:
+                message = '用户名不合法，请重新输入！\n' \
+                          '请注意：用户名仅可包含中文、英文字母、数字、特殊字符(.、-、_)'
+                return render(request, 'login/register.html', locals())
             password1 = register_form.cleaned_data['password1']
             password2 = register_form.cleaned_data['password2']
             email = register_form.cleaned_data['email']
             sex = register_form.cleaned_data['sex']
-            if password1 != password2:  # 判断两次密码是否相同
+            pasw = re.compile(r'[0-9]+[a-z]+[A-Z]+')
+            if len(password1) < 8:
+                message = "密码过短，至少8位，至多36位！"
+                return render(request, 'login/register.html', locals())
+            elif password1 != password2:  # 判断两次密码是否相同
                 message = "两次输入的密码不同！"
+                return render(request, 'login/register.html', locals())
+            elif pasw.findall(password1) == []:
+                message = '密码强度低！请注意同时包含大、小写字母和数字。'
                 return render(request, 'login/register.html', locals())
             else:
                 same_name_user = models.User.objects.filter(name=username)
@@ -73,7 +88,8 @@ def register(request):
 
                 new_user = models.User.objects.create()
                 new_user.name = username
-                new_user.password = password1
+                # 使用passlib中的SHA-256哈希存储
+                new_user.password = sha256_crypt.encrypt(password1)
                 new_user.email = email
                 new_user.sex = sex
                 new_user.save()
