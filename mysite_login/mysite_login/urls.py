@@ -26,5 +26,8 @@ urlpatterns = [
     url(r'^login/', views.login),
     url(r'^register/', views.register),
     url(r'^logout/', views.logout),
+    url(r'^upload/', views.upload),
+    url(r'^download/', views.download),
+    url(r'^logout/', views.logout),
     url(r'^captcha', include('captcha.urls'))  # 增加这一行
 ]
