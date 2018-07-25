@@ -10,6 +10,7 @@ class UserForm(forms.Form):
     captcha = CaptchaField(label='验证码')
 
 
+
 # 注册表单
 class RegisterForm(forms.Form):
     gender = (
@@ -27,3 +28,9 @@ class RegisterForm(forms.Form):
     sex = forms.ChoiceField(label='性别', choices=gender)
     # 验证码
     captcha = CaptchaField(label='验证码')
+
+
+
+# 文件上传表单
+class FileUploadForm(forms.Form):
+    filename = forms.FileField(label="文件")

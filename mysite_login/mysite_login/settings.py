@@ -25,7 +25,7 @@ SECRET_KEY = '3gukkfk0=wp_ljbs_x=r8aes4a*7wi#$l5$3yvgrao6-$1$9+7'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['www.llmysite.com']
 
 
 # Application definition
@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login',
     'captcha',
+    'werkzeug_debugger_runserver',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -128,3 +130,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+# 定义一个完整路径给 MEDIA_ROOT 以便让 Django在此处保存上传文件
+# MEDIA_ROOT = r".\static\upload"
+
+# 定义 MEDIA_URL 作为该目录的公共 URL,要确保该目录对 WEB 服务器用户帐号是可写的
+MEDIA_URL = './static/files/'
