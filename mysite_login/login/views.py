@@ -9,7 +9,7 @@ from .forms import UserForm
 from .forms import RegisterForm
 from .forms import FileUploadForm
 import re
-from passlib.hash import sha256_crypt
+from passlib.hash import pbkdf2_sha256
 from django.http import HttpResponse
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -37,8 +37,8 @@ def login(request):
             password = login_form.cleaned_data['password']
             try:
                 user = models.User.objects.get(name=username)
-                # 进行哈希值的比对
-                if sha256_crypt.verify(password, user.password):
+                # 加盐后进行哈希值的比对
+                if pbkdf2_sha256.verify(password + user.salt, user.password):
                     # 往session字典内写入用户状态和数据
                     request.session['is_login'] = True
                     request.session['user_id'] = user.id
@@ -97,8 +97,10 @@ def register(request):
 
                 new_user = models.User.objects.create()
                 new_user.name = username
-                # 使用passlib中的SHA-256哈希存储
-                new_user.password = sha256_crypt.encrypt(password1)
+                # 使用passlib中的pbkdf2_SHA-256哈希存储
+                # 随机生成用户盐值为256位，32个字节
+                new_user.salt = str(os.urandom(32))
+                new_user.password = pbkdf2_sha256.encrypt(password1 + new_user.salt)
                 new_user.email = email
                 new_user.sex = sex
                 # 生成公私钥对并存储
