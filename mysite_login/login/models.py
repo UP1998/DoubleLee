@@ -17,8 +17,9 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     sex = models.CharField(max_length=32, choices=gender, default='男')
     c_time = models.DateTimeField(auto_now_add=True)
-    pubkey = models.CharField(max_length=2048, default=' ')  # 用户公钥
-    privkey = models.CharField(max_length=2048, default=' ')  # 用户私钥
+    pubkey = models.CharField(max_length=4096, default=' ')  # 用户公钥
+    privkey = models.CharField(max_length=4096, default=' ')  # 用户私钥
+    salt = models.CharField(max_length=256, default=' ')  # 用户盐值
 
     def __str__(self):
         return self.name
