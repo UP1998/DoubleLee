@@ -104,10 +104,10 @@ def register(request):
                 new_user.email = email
                 new_user.sex = sex
                 # 生成公私钥对并存储
-                # 生成用户私钥
+                # 生成用户私钥2048位
                 private_key = rsa.generate_private_key(
                     public_exponent=65537,
-                    key_size=1024,
+                    key_size=2048,
                     backend=default_backend()
                 )
                 # 序列化私钥为pem格式
