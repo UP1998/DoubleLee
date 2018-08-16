@@ -9,7 +9,7 @@ from .forms import UserForm
 from .forms import RegisterForm
 from .forms import FileUploadForm
 import re
-from passlib.hash import pbkdf2_sha256
+from passlib.hash import pbkdf2_sha256,sha256_crypt
 from django.http import HttpResponse
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -104,10 +104,10 @@ def register(request):
                 new_user.email = email
                 new_user.sex = sex
                 # 生成公私钥对并存储
-                # 生成用户私钥
+                # 生成用户私钥2048位
                 private_key = rsa.generate_private_key(
                     public_exponent=65537,
-                    key_size=1024,
+                    key_size=2048,
                     backend=default_backend()
                 )
                 # 序列化私钥为pem格式
@@ -175,7 +175,8 @@ def handle_upload_file(file, userfile):
         hashes.SHA256()
     )
     # 分块加密并签名, 每个chunk默认2.5MB，可以修改
-    with open("./static/files/%s" % file.name, 'wb+') as f:
+    # 存储文件时加上文件的唯一id，避免同名文件覆盖问题
+    with open("./static/files/%s" % '['+str(userfile.id)+']' + file.name, 'wb+') as f:
         for chunk in file.chunks():
             content += chunk
             # 先使用对称密钥加密，然后使用用户私钥签名存储
@@ -183,7 +184,7 @@ def handle_upload_file(file, userfile):
             signer.update(c)
             f.write(signer.finalize())
     # passlib中sha256输入最长为4096个字符，还没想到好的文件哈希方法，先前截取4096位
-    userfile.sha256 = sha256_crypt.hash(str(content,'utf-8')[0:4096])  # str1.encode('utf-8')
+    userfile.sha256 = sha256_crypt.hash(str(content)[0:4096])  # str1.encode('utf-8')
     f.close()
 
 
